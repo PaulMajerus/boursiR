@@ -118,7 +118,7 @@ delta <- c(0,.8,0,.8,.5,
 lambda = 5
 
 # Summary dataframe ----
-library(dplyr)
+library(dplyr);library(tibble)
 table <- data.frame(biere=biere,
                     Elasticite=E,
                     attractiviteBase = alpha,
