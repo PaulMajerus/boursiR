@@ -1,0 +1,69 @@
+Explication des nouvelles parties ajoutées :
+
+    Attractivité ajustée par le stock (A <- alpha + gamma * log1p(S)):
+
+        log1p(S) permet de modéliser l'effet de rareté de manière non linéaire : quand le stock est faible (plus proche de zéro), l'attractivité augmente. Plus le stock est élevé, plus l'attractivité diminue.
+
+    Pénalités sur les stocks non écoulés (penalite_stock):
+
+        Si la bière a un stock limité, et que la demande (D) est inférieure au stock, une pénalité est appliquée pour le stock non écoulé. Cette pénalité est proportionnelle au carré de la différence entre le stock et la demande.
+
+    Pénalités sur les prix (penalite_prix et penalite_prix_moyen):
+
+        La pénalité penalite_prix vérifie que les prix restent dans les limites Pmin et Pmax.
+
+        La pénalité penalite_prix_moyen est utilisée pour éviter que la moyenne des prix soit trop élevée.
+
+    Objectif final :
+
+        L'objectif total est la somme des marges pondérées par la rareté (marge / log1p(S)) plus les pénalités sur les stocks non écoulés et les violations de la contrainte de prix.
+
+
+        Voici une explication détaillée de chacun des composants que tu souhaites intégrer dans la fonction objectif :
+1. kappa (Pénalité sur les stocks non écoulés)
+
+    Rôle : kappa contrôle la pénalité associée aux stocks qui ne sont pas vendus. Cela force l'optimisation à essayer de vendre le plus de bières possible, surtout celles qui ont un stock limité.
+
+    Valeur : Tu devras ajuster ce paramètre pour forcer l'écoulement des stocks. Une valeur élevée de kappa signifie qu’il y a une forte pression pour vendre les bières.
+
+        Si kappa est trop faible, le modèle pourrait ne pas être suffisamment incité à écouler les stocks.
+
+        Une valeur de 1 à 10 est un bon point de départ.
+
+    Forme : Si tu veux punir la consommation excédentaire de stock (lorsqu’une bière reste invendue), tu utilises cette pénalité :
+
+    penalite_stock <- kappa * sum(pmax(stock - D, 0)^2, na.rm = TRUE)
+
+    Où stock est la quantité disponible et D est la demande estimée.
+
+2. tau (Effet de rareté sur l’attractivité)
+
+    Rôle : tau ajuste l'effet de rareté dans l’attractivité de chaque bière. L’idée est que plus le stock est faible, plus l’attractivité de la bière devient grande, afin de justifier un prix plus élevé.
+
+    Valeur : tau sera un paramètre positif. Plus il est élevé, plus l'effet de rareté est fort, ce qui signifie que la bière devient plus attractive à mesure que le stock diminue. Par exemple, une valeur de 10 peut être raisonnable, mais cela dépend de la manière dont tu veux équilibrer l'effet de rareté.
+
+    Forme : Cette relation peut être intégrée à l'attractivité comme suit :
+
+    A <- alpha + gamma * log1p(S_lisse) + tau / (1 + stock_eff)
+
+    Cela signifie que tau / (1 + stock_eff) augmente au fur et à mesure que le stock diminue.
+
+3. stock_fini (Binaire : est-ce un stock limité ou illimité ?)
+
+    Rôle : Ce vecteur est binaire, où chaque valeur indique si le stock de la bière est limité (stock_fini[i] = TRUE) ou illimité (stock_fini[i] = FALSE).
+
+    Valeur : C’est une variable booléenne (TRUE / FALSE). Si une bière a un stock limité, son prix et son attractivité seront modulés par la quantité restante. En revanche, une bière illimitée (par exemple, un produit qui ne manque jamais) n'aura pas d'effet de rareté sur son prix ou sa demande.
+
+    Forme : Utilisation dans l’attractivité pour ajuster l’effet de rareté :
+
+    stock_eff <- ifelse(stock_fini, stock, Inf)
+
+    Si stock_fini est TRUE, stock_eff prend la valeur du stock. Si c’est FALSE, cela attribue Inf (infiniment disponible), ce qui élimine l'effet de rareté pour cette bière.
+
+4. stock (Quantité disponible de chaque bière)
+
+    Rôle : stock est un vecteur représentant la quantité disponible de chaque bière.
+
+    Valeur : C'est un vecteur numérique qui contient la quantité de chaque bière en stock. Par exemple, stock = c(10, 5, 0, 50, 3) pourrait être un exemple si tu as 10 unités de la première bière, 5 de la deuxième, etc.
+
+    Forme : Le stock est utilisé dans plusieurs parties du modèle, notamment dans l’attractivité (stock_eff) et dans la pénalité pour les stocks non écoulés.

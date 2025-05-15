@@ -76,9 +76,6 @@ Pmax <- c( 4.40 ,
            9.20
 )
 
-# S - Consommation cumulée ----
-S <- c(35,24,12,28,12,2,14,18,13,4,3,8,10,20,10,4,18,15)
-
 # E <- Élasticité propre à chaque bière (positif = plus sensible) ----
 E <- c(1.25,2,1.75,2,
        1.75,2.5,1.25,2,
@@ -115,7 +112,30 @@ delta <- c(0,.8,0,.8,.5,
            1,1,1,.5,.5,
            .8,1,.8)
 # lambda - coefficient à ajuster ----
-lambda = 5
+lambda = 10
+
+# kappa - Pénalité si on ne vide pas les stocks limités
+kappa = 8
+
+# tau - controle de l'effet de rarete
+tau <- rep(5,n)
+
+# stock - stock restant de bière
+stock <- c(Inf,Inf,24*5,Inf,
+           Inf,24*4,24*12,24*4,
+           24*4,24*6,24*5,24*3,
+           24*2,Inf,24*5,24*3,
+           24*2,24*2)
+
+# epsilon - correction petits nombres ----
+epsilon <- 5
+
+# stock_fini - vrai ou faux ----
+stock_fini <- c(F,F,T,F,
+                F,T,T,T,
+                T,T,T,T,
+                T,F,T,T,
+                T,T)
 
 # Summary dataframe ----
 library(dplyr);library(tibble)

@@ -26,4 +26,4 @@ res <- nloptr(
 
 # Résultat : prix optimaux
 P_optim <- res$solution
-round(P_optim,2)
+
