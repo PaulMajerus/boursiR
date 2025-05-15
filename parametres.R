@@ -56,28 +56,10 @@ Pmin <- c( 1.60 ,
 )
 
 # Pmax - Prix Maximum ----
-Pmax <- c( 4.40 ,
-           4.60 ,
-           5.40 ,
-           3.70 ,
-           5.40 ,
-           5.90 ,
-           7.70 ,
-           8.00 ,
-           8.40 ,
-           5.80 ,
-           6.50 ,
-           5.70 ,
-           5.40 ,
-           7.40 ,
-           7.90 ,
-           9.20 ,
-           7.60 ,
-           9.20
-)
+Pmax <- c(6,4,5,6,6,6,8,8,8,6,6,6,6,8,8,9,8,9)
 
 # E <- Élasticité propre à chaque bière (positif = plus sensible) ----
-E <- c(1.25,2,1.75,2,
+E <- c(1,1.5,1.5,2,
        1.75,2.5,1.25,2,
        2.5,2.5,2.5,2.5,
        3,1.25,1.75,2,
@@ -91,11 +73,11 @@ alpha <- c(15,15,10,18,
            6,15,15,15,10,15)
 
 # Effet de rareté (gamma) ----
-gamma <- c(0,0,1,2,
-           1,1,3,3,
-           3,2,2,3,
-           1,3,3,
-           3,2,3)  # peut être positif (rareté valorisée) ou négatif (saturation)
+gamma <- c(.75,.75,.75,1,
+           1,1,2,2,
+           2,1.5,1.5,2,
+           1,2,2,
+           2,1.5,2)  # peut être positif (rareté valorisée) ou négatif (saturation)
 
 # W - Matrice de similarité ----
 library(readxl)
@@ -107,7 +89,7 @@ rs[rs == 0] <- 1  # éviter division par 0
 W <- W / rs
 
 # delta - Sensibilité de la substitution ----
-delta <- c(0,.8,0,.8,.5,
+delta <- c(.5,.8,0,.8,.5,
            1,0,1,1,1,
            1,1,1,.5,.5,
            .8,1,.8)
@@ -115,20 +97,23 @@ delta <- c(0,.8,0,.8,.5,
 lambda = 10
 
 # kappa - Pénalité si on ne vide pas les stocks limités
-kappa = 8
+kappa = 0.5
 
 # tau - controle de l'effet de rarete
-tau <- rep(5,n)
+tau <- c(1,1,1,1,1,1,
+         2,3,2,2,2,1,
+         1,0.5,3,3,2,3)
+tau_adj <- ifelse(stock_fini, tau, 0)
 
 # stock - stock restant de bière
-stock <- c(Inf,Inf,24*5,Inf,
-           Inf,24*4,24*12,24*4,
+stock0 <- c(200,200,24*5,200,
+            200,24*4,24*12,24*4,
            24*4,24*6,24*5,24*3,
-           24*2,Inf,24*5,24*3,
+           24*2,200,24*5,24*3,
            24*2,24*2)
-
+stock0 <- ifelse(stock_fini, stock0, Inf)
 # epsilon - correction petits nombres ----
-epsilon <- 5
+epsilon <- 1
 
 # stock_fini - vrai ou faux ----
 stock_fini <- c(F,F,T,F,
@@ -143,7 +128,10 @@ table <- data.frame(biere=biere,
                     Elasticite=E,
                     attractiviteBase = alpha,
                     rarete = gamma,
-                    sensibilite = delta) |>
+                    sensibilite = delta,
+                    tau = tau,
+                    stock0=stock0,
+                    Conso = S) |>
   as.tibble()
 
 print(table)
